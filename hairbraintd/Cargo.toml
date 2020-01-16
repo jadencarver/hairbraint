@@ -1,0 +1,11 @@
+[package]
+name = "hairbraintd"
+version = "0.1.0"
+authors = ["Jaden Carver <jaden.carver@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+websocket = "*"
+fsevent = "*"
+ical = "*"
+maud_macros = "*"

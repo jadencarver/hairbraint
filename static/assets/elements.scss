@@ -1,0 +1,30 @@
+article {
+  margin: 1em;
+}
+
+h1 > sub {
+  color: $emcolor;
+  vertical-align: baseline;
+  float: right;
+  font-weight: normal;
+}
+
+button {
+  background-color: $emcolor;
+  border: solid $linecolor 1pt;
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 1em;
+  margin: 0 0.5em;
+}
+
+label > input.toggle-hidden {
+  display: none;
+}
+label > input.toggle-hidden + menu {
+  display: none;
+}
+label > input.toggle-hidden:checked + menu {
+  display: block;
+}
+

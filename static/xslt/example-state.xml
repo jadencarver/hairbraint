@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<state>
+  <dashboard>
+    <panel class="goal-progress">
+      <title>Daily Goals</title>
+      <goal>
+        <title>Product Sales</title>
+        <target>3</target>
+        <value>1</value>
+      </goal>
+      <goal>
+        <title>Add-ons</title>
+        <target>3</target>
+        <value>2</value>
+      </goal>
+      <goal>
+        <title>Prebookings</title>
+        <target>3</target>
+        <value>2</value>
+      </goal>
+    </panel>
+  </dashboard>
+  <schedule>
+    <date>10/10/2010</date>
+    <provider id="1234">
+      <name>Melvin Hidalgo</name>
+      <role>Stylist</role>
+      <blocks>
+        <block>
+          <name>Lunch</name>
+          <start offset="840">2:00 PM</start>
+          <end offset="900">3:00 PM</end>
+          <duration offset="60">1hr</duration>
+        </block>
+        <block>
+          <name>Off Duty</name>
+          <start offset="0">12:00 AM</start>
+          <end offset="540">9:00 AM</end>
+          <duration offset="540"></duration>
+        </block>
+        <block>
+          <name>Off Duty</name>
+          <start offset="1200">8:00 PM</start>
+          <end offset="1440">12:00 AM</end>
+          <duration offset="240"></duration>
+        </block>
+        <block>
+          <name>Susan's Retouch</name>
+          <ticket>1232</ticket>
+          <start offset="540">9:00 AM</start>
+          <end offset="570">9:30 AM</end>
+          <duration offset="30">30m</duration>
+        </block>
+        <block>
+          <name>Joseph's Haircut</name>
+          <confirmed />
+          <ticket>1234</ticket>
+          <start offset="675">11:15 AM</start>
+          <end offset="720">12:00 PM</end>
+          <duration offset="45">45m</duration>
+        </block>
+        <block>
+          <name>Sarah's Haircut</name>
+          <ticket>1233</ticket>
+          <start offset="735">12:15 AM</start>
+          <end offset="780">12:45 PM</end>
+          <duration offset="30">30m</duration>
+        </block>
+      </blocks>
+    </provider>
+    <provider id="1233">
+      <name>Jay Carver</name>
+      <role>Intern</role>
+      <blocks>
+        <block>
+          <name>Lunch</name>
+          <start offset="840">2:00 PM</start>
+          <end offset="900">3:00 PM</end>
+          <duration offset="60">1hr</duration>
+        </block>
+        <block>
+          <name>Off Duty</name>
+          <start offset="0">12:00 AM</start>
+          <end offset="540">9:00 AM</end>
+          <duration offset="540"></duration>
+        </block>
+        <block>
+          <name>Off Duty</name>
+          <start offset="1200">8:00 PM</start>
+          <end offset="1440">12:00 AM</end>
+          <duration offset="240"></duration>
+        </block>
+        <block>
+          <name>Susan's Finish</name>
+          <ticket>1232</ticket>
+          <start offset="615">10:15 AM</start>
+          <end offset="645">10:45 AM</end>
+          <duration offset="30">30m</duration>
+        </block>
+        <block>
+          <name>Sarah's Shampoo</name>
+          <ticket>1233</ticket>
+          <start offset="720">12:00 AM</start>
+          <end offset="735">12:15 PM</end>
+          <duration offset="15">15m</duration>
+        </block>
+      </blocks>
+    </provider>
+
+  </schedule>
+</state>

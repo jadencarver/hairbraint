@@ -1,0 +1,24 @@
+svg.svg-icon > * {
+  fill: $fgcolor;
+}
+
+ul.list-dashboard {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: start;
+  align-items: stretch;
+  padding-left: 1em;
+}
+ul.list-dashboard li {
+  display: inline-block;
+  flex-grow: 1;
+  border: outset grey 1pt;
+  margin-right: 1em;
+  margin-bottom: 1em;
+}
+ul.list-dashboard li * {
+  margin-left: 1em;
+}
+
+

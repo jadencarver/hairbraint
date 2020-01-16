@@ -1,0 +1,60 @@
+<html>
+    <body style="margin: 0;">
+        <svg width="100%" height="100%" onmousemove="var y=event.clientY; var cursor = this.getElementById('cursor'); cursor.setAttribute('y1', y); cursor.setAttribute('y2', y);" onmouseout="this.getElementById('cursor').style.visibility='hidden';" onmouseover="this.getElementById('cursor').style.visibility='visible';">
+            <style>
+                text {
+                    font-family: "Lucida Grande", "Helvetica Neue", Helvetica, Verdana, sans-serif;
+                }
+                .track {
+                    fill: url(#track-pattern);
+                    stroke: #cccccc;
+                }
+                .provider {
+                    fill: #AAAAAA;
+                    stroke: #000000;
+                }
+                .blocks {
+                    fill: #AAAACC;
+                    stroke: #000000;
+                }
+                #cursor {
+                    stroke: red;
+                }
+            </style>
+            <defs>
+                <pattern id="track-pattern" height="1.5em" width="200" patternUnits="userSpaceOnUse">
+                    <line x1="0" y1="0.5em" x2="200" y2="0.5em" stroke="#AAAAAA"></line>
+                </pattern>
+            </defs>
+            <rect class="track" x="0" y="2em" width="200" height="100%"></rect>
+            <clipPath id="provider-1">
+                <rect x="0" y="0" width="200" height="100%"></rect>
+            </clipPath>
+            <g class="provider" clip-path="url(#provider-1)">
+                <rect x="0" y="0" width="200" height="2em"></rect>
+                <text x="100" y="1.4em" text-anchor="middle">Melvin Hidalgo</text>
+                <g class="blocks">
+                    <rect x="0" y="2em" width="200" height="1.5em"></rect>
+                    <text x="5" y="3.1em">Joseph's Haircut</text>
+                    <rect x="0" y="3.5em" width="200" height="1.5em"></rect>
+                    <text x="5" y="4.6em">Sarah's Shampoo</text>
+                </g>
+            </g>
+            <rect class="track" x="200" y="2em" width="200" height="100%"></rect>
+            <clipPath id="provider-2">
+                <rect x="200" y="0" width="200" height="100%"></rect>
+            </clipPath>
+            <g class="provider" clip-path="url(#provider-2)">
+                <rect x="200" y="0" width="200" height="2em"></rect>
+                <text x="300" y="1.4em" text-anchor="middle">Melvin Hidalgo</text>
+                <g class="blocks">
+                    <rect x="200" y="2em" width="200" height="1.5em"></rect>
+                    <text x="205" y="3.1em">Joseph's Haircut</text>
+                    <rect x="200" y="3.5em" width="200" height="1.5em"></rect>
+                    <text x="205" y="4.6em">Sarah's Shampoo</text>
+                </g>
+            </g>
+            <line id="cursor" x1="0" y1="0" x2="100%" y2="0" style="visibility: hidden;"></line>
+        </svg>
+    </body>
+</html>
