@@ -9,7 +9,18 @@ html, body {
   padding: 0;
   margin: 0;
   background-color: #ffffff;
-  color: #4d4646; }
+  color: #4d4646;
+  height: 100%; }
+
+#body {
+  position: relative;
+  height: calc(100% - 3.5rem - 1pt); }
+
+#body.loading {
+  background-color: #2b778a;
+  text-align: center; }
+  #body.loading video {
+    max-width: 100%; }
 
 nav {
   display: block;
@@ -39,6 +50,7 @@ nav fieldset {
     text-align: center; }
 
 nav menu {
+  z-index: 1;
   position: absolute;
   top: 100%;
   background-color: #4d4646;
@@ -77,14 +89,16 @@ article {
   margin: 1em; }
 
 h1 > sub {
-  color: #7fcd91;
+  color: #2b778a;
   vertical-align: baseline;
   float: right;
   font-weight: normal; }
 
 button {
-  background-color: #7fcd91;
-  border: solid #5b5656 1pt;
+  background-color: #2b778a;
+  color: #37cbcb;
+  fill: #37cbcb;
+  border: solid #37cbcb 1pt;
   display: inline-block;
   vertical-align: middle;
   line-height: 1em;
@@ -98,9 +112,6 @@ label > input.toggle-hidden + menu {
 
 label > input.toggle-hidden:checked + menu {
   display: block; }
-
-svg.svg-icon > * {
-  fill: #4d4646; }
 
 ul.list-dashboard {
   display: flex;

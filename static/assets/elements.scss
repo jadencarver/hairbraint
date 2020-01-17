@@ -11,7 +11,9 @@ h1 > sub {
 
 button {
   background-color: $emcolor;
-  border: solid $linecolor 1pt;
+  color: $emfgcolor;
+  fill: $emfgcolor;
+  border: solid $emfgcolor 1pt;
   display: inline-block;
   vertical-align: middle;
   line-height: 1em;

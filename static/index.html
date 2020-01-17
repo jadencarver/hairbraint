@@ -25,46 +25,15 @@
             <fieldset style="float: right;">
                 <legend>Date</legend>
                 <button>&#9664;</button>
-                <input type="date" size="10" step="0"></input>
+                <input id="date" type="date" size="10" step="0"></input>
                 <!--&mdash;
                 <input type="date"></input>-->
                 <button>&#9654;</button>
                 <button>Today</button><button style="margin-left: -1pt;">&#9660;</button>
             </fieldset>
         </nav>
-        <section id="body">
-            <article>
-                <h1>
-                    Daily Goals
-                    <sub>$1,234</sub>
-                </h1>
-                <ul class="list-dashboard">
-                    <li>
-                        <h3>Product</h3>
-                        <svg style="margin: 0; width: 100%;" width="100" viewbox="0 0 100 100">
-                            <circle cx="50" cy="50" r="25" fill="transparent" stroke="#ff0000" stroke-width="50" stroke-dasharray="calc(0.50 * 157) 157"></circle>
-                            <circle cx="50" cy="50" r="25" fill="transparent" stroke="#000000" stroke-width="50" stroke-dasharray="0 calc(0.1 * 157)"></circle>
-                            <circle cx="50" cy="50" r="50" fill="transparent" stroke="#000000" stroke-width="1"></circle>
-                        </svg>
-                    </li>
-                    <li>
-                        <h3>Addons</h3>
-                        <svg style="margin: 0; width: 100%;" width="100" viewbox="0 0 100 100">
-                            <circle cx="50" cy="50" r="25" fill="transparent" stroke="#ff0000" stroke-width="50" stroke-dasharray="calc(0.50 * 157) 157"></circle>
-                            <circle cx="50" cy="50" r="25" fill="transparent" stroke="#000000" stroke-width="50" stroke-dasharray="0 calc(0.1 * 157)"></circle>
-                            <circle cx="50" cy="50" r="50" fill="transparent" stroke="#000000" stroke-width="1"></circle>
-                        </svg>
-                    </li>
-                    <li>
-                        <h3>Prebooking</h3>
-                        <svg style="margin: 0; width: 100%;" width="100" viewbox="0 0 100 100">
-                            <circle cx="50" cy="50" r="25" fill="transparent" stroke="#ff0000" stroke-width="50" stroke-dasharray="calc(0.50 * 157) 157"></circle>
-                            <circle cx="50" cy="50" r="25" fill="transparent" stroke="#000000" stroke-width="50" stroke-dasharray="0 calc(0.1 * 157)"></circle>
-                            <circle cx="50" cy="50" r="50" fill="transparent" stroke="#000000" stroke-width="1"></circle>
-                        </svg>
-                    </li>
-                </ul>
-            </article>
+        <section id="body" class="loading">
+            <video src="/assets/loading.mp4" autoplay loop style="margin: auto;" />
         </section>
         <script src="/assets/polyfills.js"></script>
         <script src="/assets/application.js"></script>
