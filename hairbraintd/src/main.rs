@@ -64,7 +64,34 @@ fn main() {
             // introduction
             let today = time::now();
             let date = today.strftime("%m/%d/%Y").unwrap();
-            client.send_message(&OwnedMessage::Text(format!("<state><date>{}</date></state>", date)));
+            client.send_message(&OwnedMessage::Text(format!("
+                                                            <state>
+                                                                <schedule>
+                                                                    <day>
+                                                                        <date>{}</date>
+                                                                        <start offset=\"480\">8:00 AM</start>
+                                                                        <end offset=\"1320\">10:00 PM</end>
+                                                                    </day>
+                                                                    <provider>
+                                                                        <name>Jaden Carver</name>
+                                                                        <blocks>
+                                                                            <block>
+                                                                                <name>Jaden's Haircut</name>
+                                                                                <start offset=\"510\">8:30 AM</start>
+                                                                                <end offset=\"555\">9:15 AM</end>
+                                                                                <duration offset=\"45\">45min</duration>
+                                                                            </block>
+                                                                            <block>
+                                                                                <name>Lunch</name>
+                                                                                <start offset=\"900\">3:00 PM</start>
+                                                                                <end offset=\"960\">4:00 PM</end>
+                                                                                <duration offset=\"60\">1hr</duration>
+                                                                            </block>
+                                                                        </blocks>
+                                                                    </provider>
+                                                                </schedule>
+                                                            </state>
+                                                            ", date)));
 
 			let (mut receiver, mut sender) = client.split().unwrap();
 

@@ -8,6 +8,7 @@
     <style>
       body, text {
         font-family: "Lucida Grande", "Helvetica Neue", Helvetica, Verdana, sans-serif;
+        font-size: 1em;
       }
       .track {
         fill: url(#track-pattern);
@@ -16,6 +17,10 @@
       .blocks {
         fill: #ff9900;
         stroke: #000000;
+      }
+      .blocks text {
+        fill: #000000;
+        stroke: none;
       }
       .blocks .out-of-service {
         fill: #ccaaaa;
@@ -29,8 +34,9 @@
       .providers {
         position: sticky;
         top: 0;
-        margin-left: 58px;
+        margin-left: 60px;
         line-height: 2em;
+        margin-top: 0;
       }
       .providers li {
         display: inline-block;
@@ -47,16 +53,17 @@
       </xsl:for-each>
     </ul>
 
-    <xsl:variable name="jump">
-      <xsl:for-each select="schedule/provider/blocks/block[ticket]/start/@offset">
-        <xsl:sort data-type="number" order="ascending" />
-        <xsl:if test="position()=1">
-          <xsl:value-of select="." />
-        </xsl:if>
-      </xsl:for-each>
+    <xsl:variable name="starthour">
+      <xsl:value-of select="floor(schedule/day/start/@offset div 60)" />
+    </xsl:variable>
+    <xsl:variable name="endhour">
+      <xsl:value-of select="floor(schedule/day/end/@offset div 60)" />
     </xsl:variable>
 
-    <svg width="100%" height="144em">
+    <svg width="100%" height="144em" onmousemove="var y=event.clientY - this.getBoundingClientRect().top; var cursor = this.getElementById('cursor'); cursor.setAttribute('y1', y); cursor.setAttribute('y2', y);" onmouseout="this.getElementById('cursor').style.visibility='hidden';" onmouseover="this.getElementById('cursor').style.visibility='visible';">
+      <xsl:attribute name="height">
+        <xsl:value-of select="($endhour - $starthour) * 6" />em
+      </xsl:attribute>
       <defs>
         <pattern id="track-pattern" height="1.5em" width="200" patternUnits="userSpaceOnUse">
           <line x1="0" y1="0" x2="200" y2="0" stroke="#AAAAAA"></line>
@@ -64,15 +71,12 @@
       </defs>
 
       <g class="timeline">
-        <xsl:for-each select="/descendant::node()[position() &lt; 97]">
-          <text x="90" y="1.25em" text-anchor="end">
-            <xsl:if test="(position() + 3) * 15 &gt;= $jump and (position() +2) * 15 &lt; $jump">
-              <xsl:attribute name="id">jump</xsl:attribute>
-            </xsl:if>
+        <xsl:for-each select="document('')/descendant::node()[position() &lt; ($endhour - $starthour) * 4 + 1]">
+          <text x="90" text-anchor="end">
             <xsl:attribute name="y">
-              <xsl:value-of select="position() * 1.5 - 0.4"/>em
+              <xsl:value-of select="position() * 1.5 - 0.5"/>em
             </xsl:attribute>
-            <xsl:variable name="hour24"><xsl:value-of select="floor((position() - 1) div 4)" /></xsl:variable>
+            <xsl:variable name="hour24"><xsl:value-of select="$starthour + floor((position() - 1) div 4)" /></xsl:variable>
             <xsl:variable name="minute">
               <xsl:value-of select="format-number((position() - 1) mod 4 * 15, '00')" />
             </xsl:variable>
@@ -114,31 +118,29 @@
               </xsl:attribute>
               <rect width="200">
                 <xsl:attribute name="x"><xsl:value-of select="$x" /></xsl:attribute>
-                <xsl:attribute name="y"><xsl:value-of select="start/@offset div 10" />em</xsl:attribute>
-                <xsl:attribute name="height"><xsl:value-of select="duration/@offset div 10" />em</xsl:attribute>
+                <xsl:attribute name="y"><xsl:value-of select="(start/@offset div 10) - ($starthour * 6)" />em</xsl:attribute>
+                <xsl:attribute name="height"><xsl:value-of select="(duration/@offset div 10)" />em</xsl:attribute>
               </rect>
               <text>
                 <xsl:attribute name="x"><xsl:value-of select="$x + 5" /></xsl:attribute>
-                <xsl:attribute name="y"><xsl:value-of select="start/@offset div 10 + 1.1" />em</xsl:attribute>
+                <xsl:attribute name="y"><xsl:value-of select="(start/@offset div 10) - ($starthour * 6) + 1.15" />em</xsl:attribute>
                 <xsl:value-of select="name" />
               </text>
+              <xsl:if test="duration/@offset &gt; 30">
+                <text text-anchor="end">
+                  <xsl:attribute name="x"><xsl:value-of select="$x + 195" /></xsl:attribute>
+                  <xsl:attribute name="y"><xsl:value-of select="(end/@offset div 10) - ($starthour * 6) - 0.5" />em</xsl:attribute>
+                  <xsl:value-of select="duration" />
+                </text>
+              </xsl:if>
             </g>
           </xsl:for-each>
         </g>
       </xsl:for-each>
+      <line id="cursor" x1="0" y1="0" x2="100%" y2="0" stroke="red" />
     </svg>
     <script>
-      document.addEventListener("DOMContentLoaded", function() {
-        setTimeout(function() {
-          var jump;
-          if (jump = document.getElementById("jump")) {
-            var jump_top = jump.getBoundingClientRect().top + scrollY;
-            console.log(jump_top);
-            window.scrollTo(0, jump_top);
-            console.log(scrollY);
-          }
-        }, 100);
-      });
+
     </script>
   </div>
 </xsl:template>

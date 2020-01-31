@@ -23,8 +23,9 @@
       .providers {
         position: sticky;
         top: 0;
-        margin-left: 58px;
+        margin-left: 60px;
         line-height: 2em;
+        margin-top: 0;
       }
       .providers li {
         display: inline-block;
@@ -130,15 +131,3 @@
             11:30 PM
             11:45 PM
             LunchOff DutyOff DutySusan's RetouchJoseph's HaircutSarah's HaircutLunchOff DutyOff DutySusan's FinishSarah's Shampoo
-      document.addEventListener("DOMContentLoaded", function() {
-        setTimeout(function() {
-          var jump;
-          if (jump = document.getElementById("jump")) {
-            var jump_top = jump.getBoundingClientRect().top + scrollY;
-            console.log(jump_top);
-            window.scrollTo(0, jump_top);
-            console.log(scrollY);
-          }
-        }, 100);
-      });
-    
