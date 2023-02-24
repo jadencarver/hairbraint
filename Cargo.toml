@@ -1,0 +1,16 @@
+[package]
+name = "hairbraint"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+"actix" = "*"
+"actix-web" = { version = "*", optional = true }
+"gtk" = { version = "*", optional = true }
+"glib" = { version = "*", optional = true }
+
+[features]
+"gtk" = ["dep:gtk", "dep:glib"]
+"web" = ["dep:actix-web"]
