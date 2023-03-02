@@ -26,6 +26,8 @@
     <property name="width-request">1000</property>
     <property name="height-request">700</property>
     <property name="can-focus">False</property>
+    <property name="has-resize-grip">True</property>
+    <property name="show-menubar">False</property>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
@@ -282,7 +284,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkStack">
+          <object class="GtkStack" id="display">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="hexpand">True</property>
@@ -291,13 +293,19 @@
                 <property name="name">schedule</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
+                <property name="hscrollbar-policy">always</property>
+                <property name="vscrollbar-policy">always</property>
                 <property name="shadow-type">in</property>
+                <property name="min-content-width">500</property>
+                <property name="propagate-natural-width">True</property>
                 <child>
                   <object class="GtkViewport" id="day_viewport">
+                    <property name="width-request">1200</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <child>
                       <object class="GtkDrawingArea" id="day_area">
+                        <property name="width-request">750</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                       </object>
