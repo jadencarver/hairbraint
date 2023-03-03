@@ -2,11 +2,6 @@
 <!-- Generated with glade 3.40.0 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
-  <object class="GtkAdjustment" id="adjustment1">
-    <property name="upper">100</property>
-    <property name="step-increment">1</property>
-    <property name="page-increment">10</property>
-  </object>
   <object class="GtkListStore" id="appointments">
     <columns>
       <!-- column-name contact -->
@@ -27,8 +22,19 @@
       </row>
     </data>
   </object>
+  <object class="GtkAdjustment" id="providers_adjustment">
+    <property name="upper">100</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">10</property>
+    <property name="page-size">10</property>
+  </object>
+  <object class="GtkAdjustment" id="timeline_adjustment">
+    <property name="upper">100</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">10</property>
+    <property name="page-size">10</property>
+  </object>
   <object class="GtkApplicationWindow" id="main">
-    <property name="width-request">1000</property>
     <property name="height-request">700</property>
     <property name="can-focus">False</property>
     <property name="show-menubar">False</property>
@@ -65,6 +71,7 @@
                             <property name="name">incoming</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="has-focus">True</property>
                           </object>
                         </child>
                       </object>
@@ -294,9 +301,12 @@
             <property name="hexpand">True</property>
             <child>
               <!-- n-columns=2 n-rows=2 -->
-              <object class="GtkGrid">
+              <object class="GtkGrid" id="day">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
+                <property name="can-focus">True</property>
+                <property name="is-focus">True</property>
+                <property name="can-default">True</property>
+                <property name="has-default">True</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkScrolledWindow" id="day_window">
@@ -305,20 +315,23 @@
                     <property name="can-focus">True</property>
                     <property name="hexpand">True</property>
                     <property name="vexpand">True</property>
+                    <property name="hadjustment">providers_adjustment</property>
+                    <property name="vadjustment">timeline_adjustment</property>
                     <property name="hscrollbar-policy">always</property>
                     <property name="vscrollbar-policy">always</property>
-                    <property name="shadow-type">in</property>
+                    <property name="shadow-type">out</property>
                     <property name="min-content-width">500</property>
                     <property name="propagate-natural-width">True</property>
                     <child>
                       <object class="GtkViewport" id="day_viewport">
-                        <property name="width-request">1200</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="hadjustment">providers_adjustment</property>
+                        <property name="vadjustment">timeline_adjustment</property>
                         <property name="shadow-type">none</property>
                         <child>
                           <object class="GtkDrawingArea" id="day_area">
-                            <property name="width-request">750</property>
+                            <property name="height-request">1800</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                           </object>
@@ -332,10 +345,13 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="date">
+                  <object class="GtkLabel" id="time">
+                    <property name="width-request">56</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes"> 0:00</property>
+                    <property name="margin-start">5</property>
+                    <property name="margin-end">5</property>
+                    <property name="label" translatable="yes">12:22 PM</property>
                     <property name="width-chars">7</property>
                     <property name="max-width-chars">7</property>
                     <attributes>
@@ -352,22 +368,24 @@
                   <object class="GtkScrolledWindow" id="providers_window">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
+                    <property name="hadjustment">providers_adjustment</property>
+                    <property name="hscrollbar-policy">external</property>
                     <property name="vscrollbar-policy">never</property>
-                    <property name="shadow-type">in</property>
                     <child>
                       <object class="GtkViewport" id="providers_viewport">
                         <property name="width-request">1200</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="hadjustment">providers_adjustment</property>
                         <child>
                           <object class="GtkBox" id="providers_box">
-                            <property name="width-request">750</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="margin-start">2</property>
                             <property name="margin-end">2</property>
-                            <property name="margin-bottom">6</property>
-                            <property name="spacing">4</property>
+                            <property name="margin-top">2</property>
+                            <property name="margin-bottom">2</property>
+                            <property name="spacing">5</property>
                             <property name="homogeneous">True</property>
                             <child>
                               <placeholder/>
@@ -395,15 +413,17 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkScrolledWindow">
+                  <object class="GtkScrolledWindow" id="timeline_window">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
+                    <property name="vadjustment">timeline_adjustment</property>
                     <property name="hscrollbar-policy">never</property>
-                    <property name="shadow-type">in</property>
+                    <property name="vscrollbar-policy">external</property>
                     <child>
                       <object class="GtkViewport" id="timeline_viewport">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="vadjustment">timeline_adjustment</property>
                         <child>
                           <object class="GtkDrawingArea" id="timeline_area">
                             <property name="height-request">1800</property>
