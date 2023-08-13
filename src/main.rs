@@ -72,8 +72,9 @@ impl Contact {
 }
 
 fn main() -> eframe::Result<()> {
-    let native_options = eframe::NativeOptions::default();
-    eframe::run_native("Hairbraint", native_options, Box::new(|ctx| Box::new(App::new())))
+    let mut options = eframe::NativeOptions::default();
+    options.initial_window_size = Some(egui::vec2(1920.0, 1080.0));
+    eframe::run_native("Hairbraint", options, Box::new(|ctx| Box::new(App::new())))
 }
 
 impl App {
@@ -98,14 +99,8 @@ impl eframe::App for App {
         // Left Panel
         egui::SidePanel::left("in").show(ctx, |ui| {
             // Search
-            ui.horizontal(|ui| {
-                ui.text_edit_singleline(&mut self.query);
-                if ui.button("🔍").clicked() {
-                    // Handle search logic here
-                }
-            });
-
-            egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
+            ui.text_edit_singleline(&mut self.query);
+            egui::ScrollArea::vertical().auto_shrink([false, true]).show(ui, |ui| {
                 for (i, contact) in self.contacts.iter().enumerate() {
                     contact.display(ui);
                 }
@@ -126,25 +121,27 @@ impl eframe::App for App {
                                 ui.vertical(|ui| {
                                     ui.add_space(25.0);
                                     for j in 0..10 {
-                                        ui.add(egui::Button::new("Blowdry").min_size(egui::vec2(150.0,75.0)));
+                                        if (i + j) % 4 < 3 { ui.add_space(75.0); }
+                                        ui.add(egui::Button::new("Blowdry").min_size(egui::vec2(150.0, 75.0)));
                                     }
                                 });
 
                             }
                         });
                     });
-                    let painter = ui.painter();
+                    let painter = ui.painter_at(scroll_area.inner_rect);
                     let offset_x = scroll_area.state.offset.x;
                     let offset_y = scroll_area.state.offset.y;
+                    let bg_color = ui.visuals().widgets.noninteractive.bg_fill;
+                    painter.rect_filled(egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(ui.min_rect().max.x, 25.0)), egui::Rounding::none(), bg_color);
+                    painter.rect_filled(egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(ui.min_rect().min.x + 65.0, ui.min_rect().max.y)), egui::Rounding::none(), bg_color);
                     for i in 0..10 {
                         let pos = egui::pos2((i * 158) as f32 + ui.min_rect().min.x + 75.0 - scroll_area.state.offset.x, ui.min_rect().min.y);
-                        painter.rect_filled(egui::Rect::from_min_size(pos, egui::vec2(150.0, 20.0)), egui::Rounding::none(), ui.visuals().window_fill);
                         painter.text(pos, egui::Align2::LEFT_TOP, "Jay Bez Ness", egui::FontId::proportional(14.0), ui.visuals().text_color());
                     }
                     for j in 0..24*4 {
-                        let pos = egui::pos2(ui.min_rect().min.x, (j * 25) as f32 + ui.min_rect().min.y + 25.0 - scroll_area.state.offset.y);
-                        painter.rect_filled(egui::Rect::from_min_size(pos, egui::vec2(75.0, 25.0)), egui::Rounding::none(), ui.visuals().window_fill);
-                        painter.text(pos, egui::Align2::LEFT_TOP, format!("{}:{:02} PM", j / 4, j % 4 * 15), egui::FontId::proportional(14.0), ui.visuals().text_color());
+                        let pos_text = egui::pos2(ui.min_rect().min.x + 60.0, (j * 25) as f32 + ui.min_rect().min.y + 25.0 - scroll_area.state.offset.y);
+                        painter.text(pos_text, egui::Align2::RIGHT_TOP, format!("{}:{:02} PM", j / 4, j % 4 * 15), egui::FontId::proportional(14.0), ui.visuals().text_color());
                     }
 
                 },
