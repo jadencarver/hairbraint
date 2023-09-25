@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS ashchange;
+DROP TABLE IF EXISTS ash;

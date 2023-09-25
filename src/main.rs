@@ -3,128 +3,13 @@ extern crate diesel;
 use eframe::egui;
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
+use current_locale::current_locale;
 
-//// Diesel setup
-//mod schema {
-//    table! {
-//        // I need to be able to put a 0 into any _id field and have a corresponding lookup that
-//        // allows me to generalize any identifier as a uuid/uri or human-readable.  Basically
-//        // the same as a BLOB storage but shorter.  Whenever I run into ID=0, I know I could
-//        // incorporate external identifiers, or declare them as externally represented
-//        //
-//        //textual_id {
-//        //  table -> String,
-//        //  field -> String, (or "table.field")
-//        //
-//        //  value -> String, // presume ("human readable value")
-//        //  uuid -> String, // for server-side network identifiers
-//        //  uri -> String, // human-lite, ala limited but semi-standardized "sms://123-123-1234" or
-//        //                 // "http://asdf.com/asdf" could host data that we could fetch
-//        //  these three values kind of scale where 'value' is most generic/useless, uuid is
-//        //  most specific but also less useful, or a uri which kind of in the middle
-//        //}
-//        //
-//        // this enables me to reference things that may not be resolved or resolvable immediately
-//        // after a sync such as a new provider that doesn't have a corresponding relationship.
-//        // Rather than a user_id like "123", I might have "user" like "mail://myname@asdf.com" that
-//        // I could possibly fetch from the internet in order to locally construct such a user, in
-//        // which case I could then generate an ID and use that instead.
-//        //
-//        // It's kind of irrelevant as if it doesn't contain a URI it will be obvious...
-//
-//        openings (id) {
-//            id -> Integer,
-//            closing_id -> Integer,
-//            time -> Timestamp, // (start time)
-//            duration -> Duration, // use MAX(duration) to optimize lookups by time
-//            provider_id -> Integer,
-//            reason -> String, // is this scheduled time on?
-//        }
-//        closings (id) {
-//            id -> Integer,
-//            opening_id -> Integer,
-//            time -> Timestamp, // (start time)
-//            duration -> Duration,
-//            provider_id -> Integer,
-//            consumer_id -> Integer, // (only closings)
-//        }
-//        //// rules end up being client side validation concerns (ala irrelevant for now)
-//        //rules (id) {
-//        //    id -> Integer,
-//        //    //scope -> (indicates the severity of the inconsistency)
-//        //    //         (defunct by) derived from the depth of the provider(*1) in it's heirarchy
-//        //    provider_id -> Integer,
-//        //    application -> Enum, // { openings/closings }
-//        //    subject -> String, // SQL fragment like "time + duration"
-//        //    validation -> Enum { },
-//        //}
-//
-//        interactions(id) {
-//            uuid -> String,
-//            parent_id -> Option<Integer>,
-//            regards_id -> Option<Integer>,
-//            provider_id -> Integer,
-//            consumer_id -> Integer,
-//            service_id -> Option<Integer>,
-//            rule_id -> Option<Integer>,
-//            ref_uri -> Option<String>
-//        }
-//
-//        interaction_states {
-//            interaction_id -> Integer,
-//            property -> String,
-//            value -> String,
-//        }
-//        
-//        // it's possible there is another inversion here happening between providers and services.
-//        // in this inversion the services make inferences into the providers to establish which
-//        // providers are able to perform them.  This aligns to the generative behavior of
-//        // 'openings'.  These probabilities also must account for inventory and such rules that
-//        // apply to them.
-//        // inversely, providers declare which services they are willing to do and under what
-//        // conditions.
-//        providers { // heirarchy
-//            parent_id -> Integer,
-//            name -> String
-//            // (null) (scope = 0) [imposed by the application] *1
-//            // Scott J (scope = 1)
-//            // \- Nichole (scope = 2)
-//            //   \- Keyiana (scope = 3)
-//            //   \- Rafi (scope = 3)
-//        }
-//        services {
-//            provider_id -> Integer,
-//            shortcode -> String, // like "HH" or "CSP" for search lookup
-//            name -> String
-//        }
-//    }
-//}
+pub mod schema;
+pub mod models;
 
-// consider that different services may allow for different rules
-// providers may have their own set of rules
-// companies may have rules
-// the universe may have rules (what is physically possible, like traveling faster than light)
+use self::models::{Ash, AsChange};
 
-// Rule examples
-// - No Double Booking = No overlapping 'start' times for the duration for a provider
-//     Rule { subject (time+duration) }
-// - No color services in the evenings for senior stylists
-// - Everybody must (attempt) at least 2 blowdries a day
-
-//#[derive(Debug, Queryable)]
-//struct User {
-//    id: i32,
-//    name: String,
-//    age: i32,
-//}
-
-fn establish_connection() -> SqliteConnection {
-    let database_url = "database.sqlite";
-    SqliteConnection::establish(&database_url)
-        .expect(&format!("Error connecting to {}", database_url))
-}
-
-#[derive(Debug, Queryable)]
 struct Contact {
     name: String,
     uri: String,
@@ -140,6 +25,8 @@ enum AppState {
 }
 
 struct App {
+    ante: Ash,
+    db: SqliteConnection,
     state: AppState,
     query: String,
     contacts: Vec<Contact>,
@@ -173,20 +60,49 @@ impl Contact {
 }
 
 fn main() -> eframe::Result<()> {
+    let mut app = App::new();
+    let title = app.title();
+
     let mut options = eframe::NativeOptions::default();
     options.initial_window_size = Some(egui::vec2(1920.0, 1080.0));
-    eframe::run_native("Hairbraint", options, Box::new(|ctx| Box::new(App::new())))
+
+    eframe::run_native(&title, options, Box::new(|ctx| Box::new(app)))
 }
 
 impl App {
     fn new() -> App {
+        use schema::ashes::dsl::{ashes, ash};
+
+        let database_url = "database.sqlite";
+        let mut db = SqliteConnection::establish(&database_url).expect(&format!("Error connecting to {}", database_url));
+
+        let lang = current_locale().unwrap_or(String::from("en"));
+        let ante = ashes.filter(ash.eq(format!("lang.{}", lang))).first::<Ash>(&mut db).unwrap_or(
+            ashes.filter(ash.eq("lang.en")).first::<Ash>(&mut db).expect("missing lang.en antecedent")
+        );
+
         App {
+            ante: ante,
             state: AppState::Scheduling,
             query: String::new(),
             contacts: (0..100).map(|i| { Contact::new(i) }).collect(),
-            contact: None
+            contact: None,
+            db: db
         }
     }
+
+    fn title(&mut self) -> String {
+        use schema::ashes::dsl::{ashes, ash};
+        use schema::aschanges::dsl::{aschanges, ash_id};
+        let title = ashes.filter(ash.eq("app.title")).first::<Ash>(&mut self.db).unwrap();
+        let localized = aschanges.filter(ash_id.eq(title.id)).first::<AsChange>(&mut self.db);
+        localized.unwrap().alias.unwrap()
+    }
+
+    //fn lookup(mut self, ash: &Ash, to: &Ash) -> AsChange {
+    //    use schema::aschanges::dsl::{aschanges, ash_id, ante_id, product_id};
+    //    aschanges.filter(ante_id.eq(self.ante.id)).filter(ash_id.eq(ash.id)).filter(product_id.eq(to.id)).first::<AsChange>(&mut self.db).unwrap()
+    //}
 }
 
 impl eframe::App for App {
@@ -227,7 +143,7 @@ impl eframe::App for App {
                             }
                         });
                     });
-                    let painter = ui.painter_at(scroll_area.rect);
+                    let painter = ui.painter_at(scroll_area.inner_rect);
                     let offset_x = scroll_area.state.offset.x;
                     let offset_y = scroll_area.state.offset.y;
                     let bg_color = ui.visuals().widgets.noninteractive.bg_fill;
@@ -255,6 +171,18 @@ impl eframe::App for App {
         egui::SidePanel::right("out").show(ctx, |ui| {
             ui.heading("Check out");
             // Add widgets here for the right panel
+            
+            let results = schema::ashes::dsl::ashes.load::<Ash>(&mut self.db).unwrap();
+
+            egui::Grid::new("some_unique_id").show(ui, |ui| {
+                ui.label("Ash");
+                ui.end_row();
+
+                for result in results {
+                    ui.label(result.ash);
+                    ui.end_row();
+                }
+            });
         });
     }
 }
