@@ -4,9 +4,8 @@ diesel::table! {
     aschanges (id) {
         id -> Integer,
         ash_id -> Integer,
-        ante_id -> Nullable<Integer>,
+        ante_id -> Integer,
         time -> Timestamp,
-        duration -> Integer,
         sigma -> Integer,
         product_id -> Integer,
         alias -> Nullable<Text>,

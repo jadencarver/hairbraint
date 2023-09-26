@@ -94,7 +94,7 @@ impl App {
     fn title(&mut self) -> String {
         use schema::ashes::dsl::{ashes, ash};
         use schema::aschanges::dsl::{aschanges, ash_id};
-        let title = ashes.filter(ash.eq("app.title")).first::<Ash>(&mut self.db).unwrap();
+        let title = ashes.filter(ash.eq("my.title")).first::<Ash>(&mut self.db).unwrap();
         let localized = aschanges.filter(ash_id.eq(title.id)).first::<AsChange>(&mut self.db);
         localized.unwrap().alias.unwrap()
     }
@@ -168,7 +168,7 @@ impl eframe::App for App {
         });
 
         // Right Panel
-        egui::SidePanel::right("out").show(ctx, |ui| {
+        egui::SidePanel::right("out").min_width(200.0).show(ctx, |ui| {
             ui.heading("Check out");
             // Add widgets here for the right panel
             
@@ -176,16 +176,27 @@ impl eframe::App for App {
             use schema::aschanges::dsl::{aschanges, ash_id};
             let results = ashes.load::<Ash>(&mut self.db).unwrap();
 
-            egui::Grid::new("some_unique_id").show(ui, |ui| {
-                ui.label("Ash");
-                ui.label("Alias");
+            egui::Grid::new("some_unique_id").min_col_width(10.0).num_columns(3).show(ui, |ui| {
+                //ui.label("ash");
+                //ui.label("ante");
+                ui.label("Σ");
+                ui.label("product");
+                ui.label("alias");
+                //ui.label("rate");
                 ui.end_row();
 
                 for result in results {
                     let changes = aschanges.filter(ash_id.eq(result.id)).load::<AsChange>(&mut self.db);
                     for change in changes.unwrap() {
-                        ui.label(&result.ash);
-                        ui.label(change.alias.unwrap_or(String::from("None")));
+                        let ante = ashes.find(change.ante_id).first::<Ash>(&mut self.db).unwrap();
+                        let product = ashes.find(change.product_id).first::<Ash>(&mut self.db).unwrap();
+                        let mut alias = change.alias.unwrap_or("None".into());
+                        //ui.label(&result.ash);
+                        //ui.label(ante.ash);
+                        ui.label(format!("{}",change.sigma));
+                        ui.label(product.ash);
+                        ui.text_edit_singleline(&mut alias);
+                        //ui.label(format!("{:?}", change.rate));
                         ui.end_row();
                     }
                 }
