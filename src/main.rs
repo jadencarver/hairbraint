@@ -143,7 +143,7 @@ impl eframe::App for App {
                             }
                         });
                     });
-                    let painter = ui.painter_at(scroll_area.inner_rect);
+                    let painter = ui.painter_at(scroll_area.inner_rect.expand(3.0));
                     let offset_x = scroll_area.state.offset.x;
                     let offset_y = scroll_area.state.offset.y;
                     let bg_color = ui.visuals().widgets.noninteractive.bg_fill;
@@ -172,15 +172,22 @@ impl eframe::App for App {
             ui.heading("Check out");
             // Add widgets here for the right panel
             
-            let results = schema::ashes::dsl::ashes.load::<Ash>(&mut self.db).unwrap();
+            use schema::ashes::dsl::{ashes, ash};
+            use schema::aschanges::dsl::{aschanges, ash_id};
+            let results = ashes.load::<Ash>(&mut self.db).unwrap();
 
             egui::Grid::new("some_unique_id").show(ui, |ui| {
                 ui.label("Ash");
+                ui.label("Alias");
                 ui.end_row();
 
                 for result in results {
-                    ui.label(result.ash);
-                    ui.end_row();
+                    let changes = aschanges.filter(ash_id.eq(result.id)).load::<AsChange>(&mut self.db);
+                    for change in changes.unwrap() {
+                        ui.label(&result.ash);
+                        ui.label(change.alias.unwrap_or(String::from("None")));
+                        ui.end_row();
+                    }
                 }
             });
         });
