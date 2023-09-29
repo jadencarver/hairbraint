@@ -4,20 +4,14 @@ use eframe::egui;
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
 use current_locale::current_locale;
+use chrono::Local;
 
 pub mod schema;
 pub mod models;
 
 use self::models::{Ash, AsChange};
 
-struct Contact {
-    name: String,
-    uri: String,
-    service: String,
-    time: String,
-    icon_id: Option<egui::TextureId>
-}
-
+#[derive(PartialEq)]
 enum AppState {
     Relating,
     Scheduling,
@@ -27,38 +21,11 @@ enum AppState {
 
 struct App {
     ante: Ash,
-    focus: Option<Ash>,
+    focus: Ash,
     state: AppState,
+    resource: bool,
     query: String,
-    db: SqliteConnection,
-    contacts: Vec<Contact>,
-    contact: Option<usize>,
-}
-
-impl Contact {
-    pub fn new(i: usize) -> Contact {
-        Contact {
-            name: String::from(["Jabez Carver", "Jaden Carver", "Charlie Chappy", "Boardy Board"][i % 4]),
-            uri: String::from(["Biblical King", "Dyslexic King", "All Dogs Go To Heaven", "Monopoly Man"][i % 4]),
-            icon_id: None,
-            service: String::from(["Haircut", "Highlight", "Shine Coat", "Single Process Color"][i % 4]),
-            time: String::from(format!("{}:{:02} PM", i / 4, i % 4 * 15))
-        }
-    }
-
-    pub fn display(&self, ui: &mut egui::Ui) {
-        ui.horizontal(|ui| {
-            ui.group(|ui| {
-                ui.set_min_size(egui::vec2(22.0, 22.0));
-                ui.label("IMG");
-            });
-            ui.vertical(|ui| {
-                ui.strong(&self.name);
-                ui.label(&self.service);
-            });
-            ui.strong(&self.time);
-        });
-    }
+    db: SqliteConnection
 }
 
 fn main() -> eframe::Result<()> {
@@ -78,27 +45,23 @@ impl App {
         let database_url = "database.sqlite";
         let mut db = SqliteConnection::establish(&database_url).expect(&format!("Error connecting to {}", database_url));
 
-        let lang = current_locale().unwrap_or(String::from("en"));
+        //let lang = current_locale().unwrap_or(String::from("en"));
+        let lang = String::from("en");
         let ante = ashes.filter(ash.eq(format!("lang.{}", lang))).first::<Ash>(&mut db).unwrap_or(
             ashes.filter(ash.eq("lang.en")).first::<Ash>(&mut db).expect("missing lang.en antecedent")
         );
 
         App {
-            ante: ante.clone(), focus: Some(ante),
+            ante: ante.clone(), focus: ante,
+            resource: false,
             state: AppState::Scheduling,
             query: String::new(),
-            contacts: (0..100).map(|i| { Contact::new(i) }).collect(),
-            contact: None,
             db: db
         }
     }
 
     fn title(&mut self) -> String {
-        use schema::ashes::dsl::{ashes, ash};
-        use schema::aschanges::dsl::{aschanges, ash_id};
-        let title = ashes.filter(ash.eq("my.name")).first::<Ash>(&mut self.db).unwrap();
-        let localized = aschanges.filter(ash_id.eq(title.id)).first::<AsChange>(&mut self.db);
-        localized.unwrap().alias.unwrap()
+        "Hairbraint".into()
     }
 
     //fn lookup(mut self, ash: &Ash, to: &Ash) -> AsChange {
@@ -112,27 +75,82 @@ impl eframe::App for App {
 
         // Left Panel
         egui::SidePanel::left("in").show(ctx, |ui| {
+
+            ui.label(&self.ante.ash);
+            ui.label(&self.focus.ash);
+
             // Search
-            ui.text_edit_singleline(&mut self.query);
+            if ui.text_edit_singleline(&mut self.query).gained_focus() {
+                use schema::ashes::dsl::{ashes, ash};
+                let lang = String::from("en");
+                self.ante = ashes.filter(ash.eq(format!("lang.{}", lang))).first::<Ash>(&mut self.db).unwrap();
+            };
             egui::ScrollArea::vertical().auto_shrink([false, true]).show(ui, |ui| {
-                for (_i, contact) in self.contacts.iter().enumerate() {
-                    contact.display(ui);
+                use schema::aschanges::dsl::{aschanges, ante_id};
+
+                let results = aschanges.filter(ante_id.eq_any([self.ante.id, self.focus.id])).load::<AsChange>(&mut self.db).unwrap();
+                for result in results {
+                    let target = result.ash(&mut self.db);
+                    let label = target.ash.clone();
+                    ui.selectable_value(&mut self.focus, target, label);
                 }
+
             });
 
         });
 
-        //egui::TopBottomPanel::top("toolbar").show(ctx, |ui| {
-        //    ui.horizontal(|ui| {
-        //        ui.button("Advanced");
-        //    });
-        //});
+        egui::TopBottomPanel::top("planner").show(ctx, |ui| {
+            ui.horizontal(|ui| {
+                let date = Local::now();
+                ui.heading(format!("{}",date.format("%c")));
+                ui.selectable_value(&mut self.state, AppState::Relating, "Relating");
+                ui.selectable_value(&mut self.state, AppState::Scheduling, "Scheduling");
+                ui.selectable_value(&mut self.state, AppState::Transaction, "Transaction");
+                ui.selectable_value(&mut self.state, AppState::Advanced, "Advanced");
+            });
+        });
 
         // Central Panel
         egui::CentralPanel::default().show(ctx, |ui| {
             // Add widgets here for the central panel
             match self.state {
-                AppState::Relating => { ui.heading("Relationship"); }
+                AppState::Relating => {
+
+                    egui::Window::new("New Relationship").show(ctx, |ui| {
+                        egui::Grid::new("relationship").num_columns(2).show(ui, |ui| {
+                            ui.label("Name");
+                            ui.text_edit_singleline(&mut self.query);
+                            ui.end_row();
+                            ui.label("Phone");
+                            ui.text_edit_singleline(&mut self.query);
+                            ui.end_row();
+                            ui.label("E-Mail");
+                            ui.text_edit_singleline(&mut self.query);
+                            ui.end_row();
+                            ui.label("Notes");
+                            ui.text_edit_multiline(&mut self.query);
+                            ui.end_row();
+                        });
+                    });
+
+                    egui::Window::new("Another Relationship").show(ctx, |ui| {
+                        egui::Grid::new("relationship").num_columns(2).show(ui, |ui| {
+                            ui.label("Name");
+                            ui.text_edit_singleline(&mut self.query);
+                            ui.end_row();
+                            ui.label("Phone");
+                            ui.text_edit_singleline(&mut self.query);
+                            ui.end_row();
+                            ui.label("E-Mail");
+                            ui.text_edit_singleline(&mut self.query);
+                            ui.end_row();
+                            ui.label("Notes");
+                            ui.text_edit_multiline(&mut self.query);
+                            ui.end_row();
+                        });
+                    });
+
+                }
                 AppState::Scheduling => {
                     let scroll_area = egui::ScrollArea::both().auto_shrink([false, false]).show(ui, |ui| {
                         ui.horizontal(|ui| {
@@ -147,7 +165,7 @@ impl eframe::App for App {
                                             //.fill([egui::Color32::LIGHT_BLUE, egui::Color32::LIGHT_GRAY, egui::Color32::LIGHT_RED][(i + j) % 3]);
                                         let button = ui.add(service);
                                         if button.clicked() {
-                                            self.focus = Some(self.ante.clone());
+                                            self.resource = true;
                                         }
                                     }
                                 });
@@ -225,18 +243,19 @@ impl eframe::App for App {
             };
         });
 
-        if let Some(focus) = &self.focus {
+        if self.resource {
 
             // Right Panel
-            egui::SidePanel::right("out").min_width(400.0).show(ctx, |ui| {
+            egui::SidePanel::right("out").min_width(300.0).show(ctx, |ui| {
                 ui.horizontal(|ui| {
                     ui.heading("Resources");
-                    ui.add_space(ui.available_width() - 20.0);
-                    let close = ui.add_sized([20.0, 20.0], egui::Button::new("×").rounding(10.0));
+                    ui.add_space(ui.available_width() - 25.0);
+                    let close = ui.add_sized([20.0, 20.0], egui::Button::new("❌").rounding(10.0));
                     if close.clicked() {
-                        self.focus = None;
+                        self.resource = false;
                     };
                 });
+                ui.separator();
             });
 
         }
