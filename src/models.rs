@@ -1,7 +1,7 @@
 use diesel::prelude::*;
 use chrono::NaiveDateTime;
 
-#[derive(Debug, Queryable, Selectable)]
+#[derive(Debug, Queryable, Selectable, Clone)]
 #[diesel(table_name = crate::schema::ashes)]
 pub struct Ash {
     pub id: i32,

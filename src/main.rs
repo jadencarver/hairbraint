@@ -21,14 +21,16 @@ struct Contact {
 enum AppState {
     Relating,
     Scheduling,
-    Transaction
+    Transaction,
+    Advanced
 }
 
 struct App {
     ante: Ash,
-    db: SqliteConnection,
+    focus: Option<Ash>,
     state: AppState,
     query: String,
+    db: SqliteConnection,
     contacts: Vec<Contact>,
     contact: Option<usize>,
 }
@@ -66,7 +68,7 @@ fn main() -> eframe::Result<()> {
     let mut options = eframe::NativeOptions::default();
     options.initial_window_size = Some(egui::vec2(1920.0, 1080.0));
 
-    eframe::run_native(&title, options, Box::new(|ctx| Box::new(app)))
+    eframe::run_native(&title, options, Box::new(|_ctx| Box::new(app)))
 }
 
 impl App {
@@ -82,7 +84,7 @@ impl App {
         );
 
         App {
-            ante: ante,
+            ante: ante.clone(), focus: Some(ante),
             state: AppState::Scheduling,
             query: String::new(),
             contacts: (0..100).map(|i| { Contact::new(i) }).collect(),
@@ -94,7 +96,7 @@ impl App {
     fn title(&mut self) -> String {
         use schema::ashes::dsl::{ashes, ash};
         use schema::aschanges::dsl::{aschanges, ash_id};
-        let title = ashes.filter(ash.eq("my.title")).first::<Ash>(&mut self.db).unwrap();
+        let title = ashes.filter(ash.eq("my.name")).first::<Ash>(&mut self.db).unwrap();
         let localized = aschanges.filter(ash_id.eq(title.id)).first::<AsChange>(&mut self.db);
         localized.unwrap().alias.unwrap()
     }
@@ -107,17 +109,24 @@ impl App {
 
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+
         // Left Panel
         egui::SidePanel::left("in").show(ctx, |ui| {
             // Search
             ui.text_edit_singleline(&mut self.query);
             egui::ScrollArea::vertical().auto_shrink([false, true]).show(ui, |ui| {
-                for (i, contact) in self.contacts.iter().enumerate() {
+                for (_i, contact) in self.contacts.iter().enumerate() {
                     contact.display(ui);
                 }
             });
 
         });
+
+        //egui::TopBottomPanel::top("toolbar").show(ctx, |ui| {
+        //    ui.horizontal(|ui| {
+        //        ui.button("Advanced");
+        //    });
+        //});
 
         // Central Panel
         egui::CentralPanel::default().show(ctx, |ui| {
@@ -137,6 +146,9 @@ impl eframe::App for App {
                                             .min_size(egui::vec2(150.0, [75.0, 75.0, 100.0, 50.0, 25.0][(i + j) % 5]));
                                             //.fill([egui::Color32::LIGHT_BLUE, egui::Color32::LIGHT_GRAY, egui::Color32::LIGHT_RED][(i + j) % 3]);
                                         let button = ui.add(service);
+                                        if button.clicked() {
+                                            self.focus = Some(self.ante.clone());
+                                        }
                                     }
                                 });
 
@@ -144,8 +156,8 @@ impl eframe::App for App {
                         });
                     });
                     let painter = ui.painter_at(scroll_area.inner_rect.expand(3.0));
-                    let offset_x = scroll_area.state.offset.x;
-                    let offset_y = scroll_area.state.offset.y;
+                    let _offset_x = scroll_area.state.offset.x;
+                    let _offset_y = scroll_area.state.offset.y;
                     let bg_color = ui.visuals().widgets.noninteractive.bg_fill;
                     //let bg_color = egui::Color32::DEBUG_COLOR;
                     //let bg_color = egui::Color32::from_rgba_premultiplied(64, 64, 64, 128);
@@ -163,44 +175,71 @@ impl eframe::App for App {
                     }
 
                 },
-                AppState::Transaction => { ui.heading("Transaction"); }
+                AppState::Transaction => {}
+                AppState::Advanced => {
+                    ui.heading("Advanced");
+
+                    use schema::ashes::dsl::{ashes};
+                    use schema::aschanges::dsl::{aschanges, ash_id};
+                    let results = ashes.load::<Ash>(&mut self.db).unwrap();
+
+                    egui::Grid::new("ashes2ashes").min_col_width(10.0).num_columns(5).show(ui, |ui| {
+                        ui.label("ante");
+                        ui.add_sized([150.0, 15.0], egui::Label::new("ash"));
+                        ui.label("Σ");
+                        ui.label("product");
+                        //ui.label("rate");
+                        ui.label("alias");
+                        ui.end_row();
+
+                        for result in results.iter() {
+                            let changes = aschanges.filter(ash_id.eq(result.id)).load::<AsChange>(&mut self.db);
+                            for change in changes.unwrap() {
+                                let ante = ashes.find(change.ante_id).first::<Ash>(&mut self.db).unwrap();
+                                let product = ashes.find(change.product_id).first::<Ash>(&mut self.db).unwrap();
+                                let mut alias = change.alias.unwrap_or("None".into());
+                                let mut ash = result.ash.clone();
+                                let mut selected: i32;
+                                selected = 1;
+
+                                ui.label(ante.ash);
+                                ui.text_edit_singleline(&mut ash);
+                                ui.label(format!("{}",change.sigma));
+
+                                egui::ComboBox::from_id_source(change.id)
+                                    .selected_text(product.ash)
+                                    .show_ui(ui, |ui| {
+                                        for product in results.iter() {
+                                            ui.selectable_value(&mut selected, product.id, product.ash.clone());
+                                        }
+                                    });
+
+                                //ui.label(format!("{:?}", change.rate));
+                                ui.text_edit_singleline(&mut alias);
+                                ui.end_row();
+                            }
+                        }
+                    });
+
+                }
             };
         });
 
-        // Right Panel
-        egui::SidePanel::right("out").min_width(200.0).show(ctx, |ui| {
-            ui.heading("Check out");
-            // Add widgets here for the right panel
-            
-            use schema::ashes::dsl::{ashes, ash};
-            use schema::aschanges::dsl::{aschanges, ash_id};
-            let results = ashes.load::<Ash>(&mut self.db).unwrap();
+        if let Some(focus) = &self.focus {
 
-            egui::Grid::new("some_unique_id").min_col_width(10.0).num_columns(3).show(ui, |ui| {
-                //ui.label("ash");
-                //ui.label("ante");
-                ui.label("Σ");
-                ui.label("product");
-                ui.label("alias");
-                //ui.label("rate");
-                ui.end_row();
-
-                for result in results {
-                    let changes = aschanges.filter(ash_id.eq(result.id)).load::<AsChange>(&mut self.db);
-                    for change in changes.unwrap() {
-                        let ante = ashes.find(change.ante_id).first::<Ash>(&mut self.db).unwrap();
-                        let product = ashes.find(change.product_id).first::<Ash>(&mut self.db).unwrap();
-                        let mut alias = change.alias.unwrap_or("None".into());
-                        //ui.label(&result.ash);
-                        //ui.label(ante.ash);
-                        ui.label(format!("{}",change.sigma));
-                        ui.label(product.ash);
-                        ui.text_edit_singleline(&mut alias);
-                        //ui.label(format!("{:?}", change.rate));
-                        ui.end_row();
-                    }
-                }
+            // Right Panel
+            egui::SidePanel::right("out").min_width(400.0).show(ctx, |ui| {
+                ui.horizontal(|ui| {
+                    ui.heading("Resources");
+                    ui.add_space(ui.available_width() - 20.0);
+                    let close = ui.add_sized([20.0, 20.0], egui::Button::new("×").rounding(10.0));
+                    if close.clicked() {
+                        self.focus = None;
+                    };
+                });
             });
-        });
+
+        }
+
     }
 }
