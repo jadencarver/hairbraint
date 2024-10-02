@@ -47,10 +47,3 @@ impl AsChange {
 
 }
 
-// ash_id -> Integer,
-// ante_id -> Nullable<Integer>,
-// time -> Timestamp,
-// sigma -> Integer,
-// product_id -> Integer,
-// alias -> Nullable<Text>,
-// rate -> Nullable<Float>,

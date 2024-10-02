@@ -34,7 +34,7 @@ INSERT INTO ashes (id, ash) VALUES
   (300, 'custom'),
     (301, 'custom.company'), (302, 'custom.company.name'),
     (310, 'companies#'),
-  (1000, 'service.csp'), (1001, 'service.csp#1')
+  (1000, 'service.csp'), (1001, 'service.csp#1'), (1002, 'tx41234')
 ;
 
 INSERT INTO aschanges (id, ash_id, ante_id, time, sigma, product_id, alias, rate) VALUES
@@ -71,7 +71,7 @@ INSERT INTO aschanges (id, ash_id, ante_id, time, sigma, product_id, alias, rate
 
   (22, 1000, 2, CURRENT_TIMESTAMP, 1, 1, "Color; Single Process", NULL),
   (23, 1001, 1000, CURRENT_TIMESTAMP, 1, 1000, "40g 7N + 40g 8N + 80g 20 vol", 1.00),
-  (24, 1001, 1000, CURRENT_TIMESTAMP, 1, 151, "VISA xxx4", 110.0)
+  (24, 1002, 1001, CURRENT_TIMESTAMP, 1, 151, "VISA xxx4", 110.0)
 
 ;
 

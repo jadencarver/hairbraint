@@ -16,7 +16,7 @@ enum AppState {
     Relating,
     Scheduling,
     Transaction,
-    Advanced
+    Database
 }
 
 struct App {
@@ -45,8 +45,8 @@ impl App {
         let database_url = "database.sqlite";
         let mut db = SqliteConnection::establish(&database_url).expect(&format!("Error connecting to {}", database_url));
 
-        //let lang = current_locale().unwrap_or(String::from("en"));
-        let lang = String::from("en");
+        let lang = current_locale().unwrap_or(String::from("en"));
+        //let lang = String::from("en");
         let ante = ashes.filter(ash.eq(format!("lang.{}", lang))).first::<Ash>(&mut db).unwrap_or(
             ashes.filter(ash.eq("lang.en")).first::<Ash>(&mut db).expect("missing lang.en antecedent")
         );
@@ -76,8 +76,10 @@ impl eframe::App for App {
         // Left Panel
         egui::SidePanel::left("in").show(ctx, |ui| {
 
-            ui.label(&self.ante.ash);
             ui.label(&self.focus.ash);
+            for l in self.focus.clone().aschanges(&mut self.db) {
+                ui.label(&l.ante(&mut self.db).ash);
+            }
 
             // Search
             if ui.text_edit_singleline(&mut self.query).gained_focus() {
@@ -106,7 +108,7 @@ impl eframe::App for App {
                 ui.selectable_value(&mut self.state, AppState::Relating, "Relating");
                 ui.selectable_value(&mut self.state, AppState::Scheduling, "Scheduling");
                 ui.selectable_value(&mut self.state, AppState::Transaction, "Transaction");
-                ui.selectable_value(&mut self.state, AppState::Advanced, "Advanced");
+                ui.selectable_value(&mut self.state, AppState::Database, "Database");
             });
         });
 
@@ -194,8 +196,8 @@ impl eframe::App for App {
 
                 },
                 AppState::Transaction => {}
-                AppState::Advanced => {
-                    ui.heading("Advanced");
+                AppState::Database => {
+                    ui.heading("Database");
 
                     use schema::ashes::dsl::{ashes};
                     use schema::aschanges::dsl::{aschanges, ash_id};
@@ -220,7 +222,11 @@ impl eframe::App for App {
                                 let mut selected: i32;
                                 selected = 1;
 
-                                ui.label(ante.ash);
+                                if ui.button(&ante.ash).clicked() {
+                                    let focus = ante.clone();
+                                    println!("{:?}", focus);
+                                    self.focus = focus;
+                                }
                                 ui.text_edit_singleline(&mut ash);
                                 ui.label(format!("{}",change.sigma));
 
