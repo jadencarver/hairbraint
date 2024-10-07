@@ -36,8 +36,8 @@ impl eframe::App for App {
 							for j in 0..16 {
 								if (i + j) % 4 < 3 { ui.add_space(75.0); }
 								let service = egui::Button::new(["Blowdry", "Haircut", "Highlight", "Root Color", "Gloss"][(i + j) % 5])
-									.min_size(egui::vec2(150.0, [75.0, 75.0, 100.0, 50.0, 25.0][(i + j) % 5]));
-									//.fill([egui::Color32::LIGHT_BLUE, egui::Color32::LIGHT_GRAY, egui::Color32::LIGHT_RED][(i + j) % 3]);
+									.min_size(egui::vec2(150.0, [75.0, 75.0, 100.0, 50.0, 25.0][(i + j) % 5]))
+									.fill([egui::Color32::LIGHT_BLUE, egui::Color32::LIGHT_GRAY, egui::Color32::LIGHT_RED][(i + j) % 3]);
 								let button = ui.add(service);
 								if button.clicked() {
 									println!("{:?}", button);
