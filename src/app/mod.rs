@@ -1,23 +1,52 @@
 use eframe::egui;
 
+enum State {
+	Started,
+	Normal,
+	Modal(String, bool)
+}
+
 pub struct App {
     db: sled::Db,
+	last_state: State,
+	state: State
 }
 
 impl App {
     pub fn new() -> App {
         let db = sled::open("target/data").expect("database failure");
-        App { db: db }
+        App { db: db, last_state: State::Started, state: State::Normal }
     }
 
 	pub fn title(&self) -> String {
-		String::from("Hairbraint")
+		if let Ok(result) = self.db.get("title") {
+			if let Some(title) = result {
+				String::from_utf8(title.to_vec()).expect("Invalid UTF-8 in title")
+			} else { String::from("Hairbraint") }
+		} else { String::from("Hairbraint") }
 	}
+
+	pub fn customer(&self, id: u8) -> Option<u8> {
+		let db = self.db.open_tree("customer").expect("Customer tree error");
+		if let Ok(result) = db.get(vec![id]) {
+			Some(result.unwrap()[0])
+		} else { None }
+	}
+
 }
 
 
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+		if let State::Modal(message_, cancel) = &self.state {
+			let message = message_.clone();
+			egui::Window::new("Modal Window").collapsible(false).resizable(false).show(ctx, |ui| {
+				ui.label(message);
+				if ui.button("OK").clicked() {
+					self.state = State::Normal;
+				}
+			});
+		}
         egui::SidePanel::left("in").show(ctx, |ui| {});
         egui::SidePanel::right("out").show(ctx, |ui| {});
         egui::TopBottomPanel::top("planner").show(ctx, |ui| {
