@@ -19,11 +19,9 @@ impl App {
     }
 
 	pub fn title(&self) -> String {
-		if let Ok(result) = self.db.get("title") {
-			if let Some(title) = result {
-				String::from_utf8(title.to_vec()).expect("Invalid UTF-8 in title")
-			} else { String::from("Hairbraint") }
-		} else { String::from("Hairbraint") }
+		self.db.get("title").ok().and_then(|result| result)
+			.map(|title| String::from_utf8_lossy(&title.to_vec()).to_string())
+			.unwrap_or_else(|| String::from("Hairbraint"))
 	}
 
 	pub fn customer(&self, id: u8) -> Option<u8> {
