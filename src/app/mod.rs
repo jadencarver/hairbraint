@@ -24,27 +24,10 @@ impl App {
 			.unwrap_or_else(|| String::from("Hairbraint"))
 	}
 
-	pub fn customer(&self, id: u8) -> Option<u8> {
-		let db = self.db.open_tree("customer").expect("Customer tree error");
-		if let Ok(result) = db.get(vec![id]) {
-			Some(result.unwrap()[0])
-		} else { None }
-	}
-
 }
-
 
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-		if let State::Modal(message_, cancel) = &self.state {
-			let message = message_.clone();
-			egui::Window::new("Modal Window").collapsible(false).resizable(false).show(ctx, |ui| {
-				ui.label(message);
-				if ui.button("OK").clicked() {
-					self.state = State::Normal;
-				}
-			});
-		}
         egui::SidePanel::left("in").show(ctx, |ui| {});
         egui::SidePanel::right("out").show(ctx, |ui| {});
         egui::TopBottomPanel::top("planner").show(ctx, |ui| {
@@ -67,7 +50,7 @@ impl eframe::App for App {
 									.fill([egui::Color32::LIGHT_BLUE, egui::Color32::LIGHT_GRAY, egui::Color32::LIGHT_RED][(i + j) % 3]);
 								let button = ui.add(service);
 								if button.clicked() {
-									self.state = State::Modal(String::from("Hello"), false);
+									self.state = State::Modal(format!("{:?}", button), false);
 									println!("{:?}", button);
 								}
 							}
@@ -95,5 +78,20 @@ impl eframe::App for App {
 				painter.rect_filled(egui::Rect::from_min_size(pos_bar, egui::vec2(30.0, 1.0)), egui::Rounding::ZERO, ui.visuals().text_color());
 			}
 		});
+
+		if let State::Modal(message_, cancel) = &self.state {
+			let message = message_.clone();
+			let screen_rect = ctx.screen_rect();
+            let mask_color = egui::Color32::from_rgba_premultiplied(0, 0, 0, 128); // Semi-transparent black mask
+            let painter = ctx.layer_painter(egui::LayerId::new(egui::Order::Background, egui::Id::new("modal_mask")));
+            painter.rect_filled(screen_rect, 0.0, mask_color);
+			egui::Window::new("Modal Window").collapsible(false).resizable(false).show(ctx, |ui| {
+				ui.label(message);
+				if ui.button("OK").clicked() {
+					self.state = State::Normal;
+				}
+			});
+		}
+
     }
 }
