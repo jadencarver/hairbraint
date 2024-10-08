@@ -67,6 +67,7 @@ impl eframe::App for App {
 									.fill([egui::Color32::LIGHT_BLUE, egui::Color32::LIGHT_GRAY, egui::Color32::LIGHT_RED][(i + j) % 3]);
 								let button = ui.add(service);
 								if button.clicked() {
+									self.state = State::Modal(String::from("Hello"), false);
 									println!("{:?}", button);
 								}
 							}
